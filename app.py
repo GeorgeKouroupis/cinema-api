@@ -1,31 +1,8 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
-
-import sqlite3
-
-def init_db():
-    conn = sqlite3.connect("cinema_db")
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS movies(
-                   id INTEGER PRIMARY KEY AUTOINCREMENT,
-                   title TEXT,
-                   director TEXT
-        )
-    """)
-
-    conn.commit()
-    conn.close()
-
-init_db()
+from models import Movie
+from database import get_connection
 
 app = FastAPI()
-
-class Movie(BaseModel):
-    title: str
-    director: str
-
 
 
 @app.get("/")
@@ -36,7 +13,7 @@ def home():
 
 @app.get("/movies")
 def get_movies():
-    conn = sqlite3.connect("cinema_db")
+    conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("SELECT * FROM movies")
@@ -58,7 +35,7 @@ def get_movies():
 
 @app.get("/movies/{movie_id}")
 def get_movie(movie_id: int):
-   conn = sqlite3.connect("cinema_db")
+   conn = get_connection()
    cursor = conn.cursor()
 
    cursor.execute("SELECT * FROM movies WHERE id = ?",(movie_id,))
@@ -77,7 +54,7 @@ def get_movie(movie_id: int):
 
 @app.post("/movies")
 def add_movie(new_movie: Movie):
-    conn = sqlite3.connect("cinema_db")
+    conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute(
@@ -94,7 +71,7 @@ def add_movie(new_movie: Movie):
 
 @app.delete("/movies/{movie_id}")
 def delete_movie(movie_id: int):
-    conn = sqlite3.connect("cinema_db")
+    conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("DELETE FROM movies WHERE id = ?",(movie_id,))
@@ -110,7 +87,7 @@ def delete_movie(movie_id: int):
 
 @app.put("/movies/{movie_id}")
 def update_movie(movie_id: int, updated_movie: Movie):
-    conn = sqlite3.connect("cinema_db")
+    conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""UPDATE movies 
